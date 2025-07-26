@@ -28,30 +28,6 @@ const initialData = {
     }
   ]
 };
-
-function TreeNode({ node, onSelect }) {
-  const [expanded, setExpanded] = useState(true);
-
-  return (
-    <div style={{ marginLeft: 16 }}>
-      <div onClick={() => setExpanded(!expanded)} style={{ cursor: 'pointer' }}>
-        ▶️ {node.name}
-      </div>
-      {expanded && node.children && node.children.map((child, index) => (
-        <TreeNode key={index} node={child} onSelect={onSelect} />
-      ))}
-      {!node.children && (
-        <div
-          onClick={() => onSelect(node)}
-          style={{ marginLeft: 16, cursor: 'pointer', color: 'dodgerblue' }}
-        >
-          📝 {node.name}
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function OutlineTree() {
   const [selectedScene, setSelectedScene] = useState(null);
 
