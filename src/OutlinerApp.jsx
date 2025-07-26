@@ -1,23 +1,26 @@
 import React, { useState } from 'react';
 import './Outliner.css';
 
+const generateId = (() => {
+  let count = 0;
+  return () => ++count;
+})();
+
 const initialStructure = {
+  id: generateId(),
   name: 'Book 1',
   children: [
     {
+      id: generateId(),
       name: 'Section 1',
       children: [
         {
+          id: generateId(),
           name: 'Chapter 1',
           children: [
-            { name: 'Scene 1', content: '', wordCount: 113, goal: 500 },
-            { name: 'Scene 2', content: '', wordCount: 0, goal: 500 },
-            { name: 'Scene 3', content: '', wordCount: 70, goal: 500 },
+            { id: generateId(), name: 'Scene 1', content: '', wordCount: 113, goal: 500 },
+            { id: generateId(), name: 'Scene 2', content: '', wordCount: 0, goal: 500 },
           ],
-        },
-        {
-          name: 'Chapter 2',
-          children: [{ name: 'Scene 1', content: '', wordCount: 0, goal: 500 }],
         },
       ],
     },
@@ -35,19 +38,20 @@ const SceneRow = ({ scene, onSelect }) => (
   </div>
 );
 
-function Tree({ node, onSelect }) {
+function Tree({ node, onSelect, onAdd }) {
   const [expanded, setExpanded] = useState(true);
 
   return (
     <div className="tree-node">
       <div className="tree-label" onClick={() => setExpanded(!expanded)}>📁 {node.name}</div>
+      <button className="add-button" onClick={() => onAdd(node)}>➕</button>
       {expanded && node.children && (
         <div className="tree-children">
           {node.children.map((child, idx) =>
             child.children ? (
-              <Tree key={idx} node={child} onSelect={onSelect} />
+              <Tree key={child.id} node={child} onSelect={onSelect} onAdd={onAdd} />
             ) : (
-              <SceneRow key={idx} scene={child} onSelect={onSelect} />
+              <SceneRow key={child.id} scene={child} onSelect={onSelect} />
             )
           )}
         </div>
@@ -57,12 +61,41 @@ function Tree({ node, onSelect }) {
 }
 
 export default function OutlinerApp() {
+  const [structure, setStructure] = useState(initialStructure);
   const [selected, setSelected] = useState(null);
+
+  const addSceneOrChild = (parentNode) => {
+    const newName = prompt('Name of new scene or group?');
+    if (!newName) return;
+    const newNode = {
+      id: generateId(),
+      name: newName,
+      content: '',
+      wordCount: 0,
+      goal: 500,
+    };
+
+    const addToTree = (node) => {
+      if (node.id === parentNode.id) {
+        const updatedChildren = node.children ? [...node.children, newNode] : [newNode];
+        return { ...node, children: updatedChildren };
+      }
+      if (node.children) {
+        return {
+          ...node,
+          children: node.children.map(addToTree),
+        };
+      }
+      return node;
+    };
+
+    setStructure((prev) => addToTree(prev));
+  };
 
   return (
     <div className="container">
       <div className="tree-panel">
-        <Tree node={initialStructure} onSelect={setSelected} />
+        <Tree node={structure} onSelect={setSelected} onAdd={addSceneOrChild} />
       </div>
       <div className="scene-panel">
         {selected ? (
