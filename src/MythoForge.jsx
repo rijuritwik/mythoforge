@@ -1,100 +1,85 @@
 import React, { useState } from 'react';
 
-const SceneAnalyzer = ({ onTagsExtracted }) => {
-  const [sceneText, setSceneText] = useState('');
-  const [tags, setTags] = useState([]);
-  const [logicMessage, setLogicMessage] = useState('');
-
-  const logicKeywords = ['sword', 'gun'];
-  const entities = [
-    { type: "Character", name: "Kalqui" },
-    { type: "Object", name: "Kṣaṇbindu" },
-    { type: "Location", name: "Hiraṇyagarbha" }
-  ];
-
-  const extractTags = () => {
-    const tagTypes = ['Character', 'Object'];
-    const detectedTags = tagTypes.filter(type =>
-      entities.some(e => e.type === type && sceneText.includes(e.name))
-    );
-    setTags(detectedTags);
-    onTagsExtracted?.(detectedTags);
-
-    const hasSword = sceneText.includes('sword');
-    const hasGun = sceneText.includes('gun');
-    setLogicMessage(
-      hasSword && hasGun
-        ? '⚠️ Logic Issue: Both sword and gun mentioned.'
-        : '✅ No logic issues found.'
-    );
-  };
-
-  const EntityTracker = ({ entities }) => {
-    const [filter, setFilter] = useState('');
-
-    const grouped = entities.reduce((acc, ent) => {
-      if (!acc[ent.type]) acc[ent.type] = [];
-      acc[ent.type].push(ent.name);
-      return acc;
-    }, {});
-
-    const filteredKeys = Object.keys(grouped).filter(key =>
-      key.toLowerCase().includes(filter.toLowerCase())
-    );
-
-    return (
-      <div>
-        <h3>🔍 Entities</h3>
-        <input
-          type="text"
-          placeholder="Filter by type..."
-          value={filter}
-          onChange={e => setFilter(e.target.value)}
-        />
-        {filteredKeys.map(type => (
-          <div key={type}>
-            <strong>{type}</strong>
-            <ul>
-              {grouped[type].map(name => (
-                <li key={name}>{name}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  return (
-    <div style={{ padding: '1rem', fontFamily: 'serif' }}>
-      <h1>🔥 MythoForge</h1>
-      <section>
-        <h2>✍️ Write Scene</h2>
-        <textarea
-          rows="4"
-          style={{ width: '100%' }}
-          placeholder="Enter scene text here..."
-          value={sceneText}
-          onChange={e => setSceneText(e.target.value)}
-        />
-        <button onClick={extractTags}>Analyze</button>
-      </section>
-      <section>
-        <h3>🏷️ Tags:</h3>
-        <p>{tags.join(', ') || 'None detected'}</p>
-        <p>{logicMessage}</p>
-      </section>
-      <section>
-        <h2>📜 Vault of Echoes</h2>
-        <textarea placeholder="Write your unlinked idea, dialogue or scene..." style={{ width: '100%' }} />
-      </section>
-      <EntityTracker entities={entities} />
-      <section>
-        <h3>📓 Scene Log</h3>
-        <p>[Placeholder for past scenes]</p>
-      </section>
-    </div>
-  );
+const initialData = {
+  name: 'Book 1',
+  children: [
+    {
+      name: 'Section 1',
+      children: [
+        {
+          name: 'Chapter 1',
+          children: [
+            { name: 'Scene 1', content: '' },
+            { name: 'Scene 2', content: '' }
+          ]
+        },
+        {
+          name: 'Chapter 2',
+          children: [
+            { name: 'Scene 1', content: '' },
+            { name: 'Scene 2', content: '' }
+          ]
+        }
+      ]
+    },
+    {
+      name: 'Section 2',
+      children: []
+    }
+  ]
 };
 
-export default SceneAnalyzer;
+function TreeNode({ node, onSelect }) {
+  const [expanded, setExpanded] = useState(true);
+
+  return (
+    <div style={{ marginLeft: 16 }}>
+      <div onClick={() => setExpanded(!expanded)} style={{ cursor: 'pointer' }}>
+        ▶️ {node.name}
+      </div>
+      {expanded && node.children && node.children.map((child, index) => (
+        <TreeNode key={index} node={child} onSelect={onSelect} />
+      ))}
+      {!node.children && (
+        <div
+          onClick={() => onSelect(node)}
+          style={{ marginLeft: 16, cursor: 'pointer', color: 'dodgerblue' }}
+        >
+          📝 {node.name}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function OutlineTree() {
+  const [selectedScene, setSelectedScene] = useState(null);
+
+  return (
+    <div style={{ display: 'flex', height: '90vh' }}>
+      <div style={{ width: '40%', borderRight: '1px solid #ccc', padding: '1rem', overflowY: 'scroll' }}>
+        <h2>📚 Outline</h2>
+        <TreeNode node={initialData} onSelect={setSelectedScene} />
+      </div>
+      <div style={{ width: '60%', padding: '1rem' }}>
+        {selectedScene ? (
+          <div>
+            <h3>{selectedScene.name}</h3>
+            <textarea
+              rows={20}
+              style={{ width: '100%' }}
+              placeholder="Write your scene here..."
+              value={selectedScene.content || ''}
+              onChange={(e) => {
+                selectedScene.content = e.target.value;
+                setSelectedScene({ ...selectedScene });
+              }}
+            />
+          </div>
+        ) : (
+          <p>Select a scene from the left to begin writing.</p>
+        )}
+      </div>
+    </div>
+  );
+}
