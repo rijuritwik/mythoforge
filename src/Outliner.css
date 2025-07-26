@@ -1,0 +1,55 @@
+.container {
+  display: flex;
+  height: 90vh;
+  font-family: sans-serif;
+  background-color: #1e1e1e;
+  color: #eee;
+}
+.tree-panel {
+  flex: 1;
+  padding: 1rem;
+  border-right: 1px solid #444;
+  overflow-y: auto;
+}
+.scene-panel {
+  flex: 2;
+  padding: 1rem;
+  border-right: 1px solid #444;
+}
+.scene-panel textarea {
+  width: 100%;
+  height: 70%;
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+}
+.side-panel {
+  flex: 1;
+  padding: 1rem;
+}
+.tree-label {
+  cursor: pointer;
+  padding: 0.2rem;
+}
+.tree-children {
+  padding-left: 1rem;
+}
+.scene-row {
+  padding: 0.3rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+.scene-row:hover {
+  background-color: #333;
+}
+.bar-wrap {
+  background: #555;
+  height: 6px;
+  width: 100%;
+}
+.bar {
+  background: limegreen;
+  height: 6px;
+}
