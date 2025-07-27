@@ -1,1 +1,116 @@
-Update OutlinerApp.jsx — Full module integration
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #0d1321;
+  color: #f0f0f0;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.left-panel {
+  width: 22%;
+  background-color: #141b2d;
+  padding: 1rem;
+  border-right: 1px solid #1e2a3a;
+  overflow-y: auto;
+}
+
+.middle-panel {
+  width: 48%;
+  padding: 1rem;
+  background-color: #1b2432;
+  overflow-y: auto;
+  border-right: 1px solid #1e2a3a;
+}
+
+.right-panel {
+  width: 30%;
+  padding: 1rem;
+  background-color: #102542;
+  overflow-y: auto;
+}
+
+h2, h3 {
+  margin-top: 0;
+  color: #66ccff;
+}
+
+textarea {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #0d1b2a;
+  color: #f8f8f2;
+  border: 1px solid #2c3e50;
+  border-radius: 6px;
+  resize: vertical;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+button {
+  margin-top: 0.5rem;
+  background-color: #1976d2;
+  border: none;
+  color: white;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #1565c0;
+}
+
+ul {
+  padding-left: 1rem;
+  margin-top: 0.25rem;
+}
+
+.tree-node {
+  margin-left: 1rem;
+  margin-bottom: 0.3rem;
+}
+
+.folder-node,
+.scene-node {
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.folder-node:hover,
+.scene-node:hover {
+  background-color: #263849;
+}
+
+.word-count {
+  margin-top: 0.5rem;
+  color: #a0c4ff;
+  font-size: 0.85rem;
+}
+
+progress {
+  width: 100%;
+  height: 8px;
+  margin-top: 4px;
+  background-color: #263849;
+}
+
+progress::-webkit-progress-bar {
+  background-color: #263849;
+}
+
+progress::-webkit-progress-value {
+  background-color: #00bcd4;
+}
+
+li {
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
