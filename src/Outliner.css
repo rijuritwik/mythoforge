@@ -1,130 +1,172 @@
-/* Outliner.css */
+import React, { useState } from 'react';
+import './Outliner.css';
 
-body {
-  margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #101820;
-  color: #f4f4f4;
+const initialData = {
+  name: 'Book 1',
+  children: [
+    {
+      name: 'Section 1',
+      children: [
+        {
+          name: 'Chapter 1',
+          children: [
+            { name: 'Scene 1', content: '', goal: 500 },
+            { name: 'Scene 2', content: '', goal: 500 }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+function TreeNode({ node, onSelect }) {
+  const [expanded, setExpanded] = useState(true);
+
+  const isScene = !node.children;
+
+  return (
+    <div className="tree-node">
+      <div
+        className={isScene ? 'scene-node' : 'folder-node'}
+        onClick={() => {
+          if (isScene) onSelect(node);
+          else setExpanded(!expanded);
+        }}
+      >
+        {isScene ? '📝' : expanded ? '📂' : '📁'} {node.name}
+      </div>
+      {expanded &&
+        node.children?.map((child, idx) => (
+          <TreeNode key={idx} node={child} onSelect={onSelect} />
+        ))}
+    </div>
+  );
 }
 
-.container {
-  display: flex;
-  height: 100vh;
-  background-color: #101820;
-  color: #ffffff;
-}
+export default function OutlinerApp() {
+  const [selectedScene, setSelectedScene] = useState(null);
+  const [sceneHistory, setSceneHistory] = useState([]);
+  const [tagIndex, setTagIndex] = useState({});
+  const [logicErrors, setLogicErrors] = useState([]);
+  const [vaultInput, setVaultInput] = useState('');
+  const [vault, setVault] = useState([]);
 
-.tree-panel,
-.scene-panel,
-.side-panel {
-  padding: 1rem;
-  overflow-y: auto;
-  height: 100%;
-}
+  const updateScene = (text) => {
+    const updatedScene = { ...selectedScene, content: text };
+    setSelectedScene(updatedScene);
+    handleTags(updatedScene.name, text);
+    validateLogic(text);
+    saveVersion(updatedScene);
+  };
 
-.tree-panel {
-  width: 30%;
-  border-right: 1px solid #444;
-  background-color: #1a1a2e;
-}
+  const handleTags = (sceneName, text) => {
+    const foundTags = text.match(/@(\w+)/g) || [];
+    const newIndex = { ...tagIndex };
+    foundTags.forEach(tag => {
+      const key = tag.slice(1);
+      if (!newIndex[key]) newIndex[key] = [];
+      if (!newIndex[key].includes(sceneName)) {
+        newIndex[key].push(sceneName);
+      }
+    });
+    setTagIndex(newIndex);
+  };
 
-.scene-panel {
-  width: 40%;
-  background-color: #16213e;
-  border-right: 1px solid #444;
-}
+  const validateLogic = (text) => {
+    const errors = [];
+    if (text.includes('@@')) errors.push('⚠️ Double @ symbol found.');
+    if (text.includes('[[') && !text.includes(']]'))
+      errors.push('⚠️ Unclosed [[ link found.');
+    setLogicErrors(errors);
+  };
 
-.side-panel {
-  width: 30%;
-  background-color: #0f3460;
-  color: #e0e0e0;
-}
+  const saveVersion = (scene) => {
+    const timestamp = new Date().toLocaleString();
+    setSceneHistory([{ ...scene, timestamp }, ...sceneHistory]);
+  };
 
-.tree-label {
-  font-weight: bold;
-  cursor: pointer;
-  margin-bottom: 0.5rem;
-  color: #a0d2eb;
-}
+  const restoreVersion = (index) => {
+    const version = sceneHistory[index];
+    setSelectedScene({ ...version });
+  };
 
-.add-button {
-  background-color: #1f4068;
-  color: #ffffff;
-  border: none;
-  padding: 0.2rem 0.6rem;
-  cursor: pointer;
-  margin-bottom: 0.5rem;
-  margin-left: 0.5rem;
-  border-radius: 4px;
-}
+  const saveToVault = () => {
+    if (vaultInput.trim()) {
+      setVault([vaultInput.trim(), ...vault]);
+      setVaultInput('');
+    }
+  };
 
-.scene-row {
-  background-color: #16213e;
-  margin: 0.3rem 0;
-  padding: 0.4rem;
-  border-radius: 4px;
-  cursor: pointer;
-  border: 1px solid #555;
-  color: #f4f4f4;
-}
+  return (
+    <div className="container">
+      <div className="left-panel">
+        <h2>📘 MythoForge</h2>
+        <TreeNode node={initialData} onSelect={setSelectedScene} />
+      </div>
 
-.scene-name {
-  font-weight: bold;
-}
+      <div className="middle-panel">
+        {selectedScene ? (
+          <>
+            <h3>{selectedScene.name}</h3>
+            <textarea
+              rows={15}
+              value={selectedScene.content}
+              onChange={(e) => updateScene(e.target.value)}
+              placeholder="Write your scene..."
+            />
+            <div className="word-count">
+              {selectedScene.content.length}/{selectedScene.goal}
+              <progress
+                value={selectedScene.content.length}
+                max={selectedScene.goal}
+              />
+            </div>
+          </>
+        ) : (
+          <p>Select a scene to start writing.</p>
+        )}
+      </div>
 
-.bar-wrap {
-  background: #333;
-  border-radius: 4px;
-  height: 6px;
-  margin-top: 0.4rem;
-}
+      <div className="right-panel">
+        <h3>📖 Entity Index Viewer</h3>
+        <ul>
+          {Object.keys(tagIndex).map(tag => (
+            <li key={tag}>
+              <strong>@{tag}</strong>: {tagIndex[tag].join(', ')}
+            </li>
+          ))}
+        </ul>
 
-.bar {
-  background: #00adb5;
-  height: 100%;
-  border-radius: 4px;
-}
+        <h3>🕰 Scene Version Timeline</h3>
+        <ul>
+          {sceneHistory.map((entry, i) => (
+            <li key={i}>
+              <button onClick={() => restoreVersion(i)}>{entry.timestamp}</button>
+            </li>
+          ))}
+        </ul>
 
-textarea,
-input[type="text"] {
-  width: 100%;
-  background-color: #0f3460;
-  border: 1px solid #2c3e50;
-  padding: 0.5rem;
-  color: #ffffff;
-  margin-bottom: 0.5rem;
-  border-radius: 4px;
-}
+        <h3>🔎 Logic Validator</h3>
+        <ul>
+          {logicErrors.map((err, i) => (
+            <li key={i} style={{ color: 'tomato' }}>{err}</li>
+          ))}
+        </ul>
 
-button {
-  background-color: #00adb5;
-  color: #ffffff;
-  border: none;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  border-radius: 4px;
-  margin-top: 0.5rem;
-}
-
-.vault-toggle {
-  background-color: #393e46;
-  margin-top: 1rem;
-}
-
-.vault {
-  background-color: #222831;
-  padding: 1rem;
-  margin-top: 1rem;
-  border-radius: 8px;
-}
-
-.vault ul {
-  list-style-type: none;
-  padding-left: 0;
-}
-
-.vault li {
-  padding: 0.3rem;
-  border-bottom: 1px solid #333;
-  color: #eeeeee;
+        <h3>📂 Vault of Echoes</h3>
+        <textarea
+          value={vaultInput}
+          onChange={(e) => setVaultInput(e.target.value)}
+          placeholder="Ideas, quotes, unused dialogues..."
+          rows={3}
+        />
+        <button onClick={saveToVault}>Save to Vault</button>
+        <ul>
+          {vault.map((entry, i) => (
+            <li key={i}>{entry}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
 }
